@@ -9,15 +9,15 @@ public class Utilities {
         WARN, DEBUG, INFO, ERROR
     }
 
-    public static void writeLog(String logLevel, String logMsg) {
+    public static void writeLog(LOG_LEVEL logLevel, String logMsg) {
         if (JAVA_LOG_ENABLED) {
-            if (logLevel.equals(LOG_LEVEL.WARN.toString())) {
+            if (logLevel.equals(LOG_LEVEL.WARN)) {
                 Log.w(LOGGER_NAME, logMsg);
-            } else if (logLevel.equals(LOG_LEVEL.DEBUG.toString())) {
+            } else if (logLevel.equals(LOG_LEVEL.DEBUG)) {
                 Log.d(LOGGER_NAME, logMsg);
-            } else if (logLevel.equals(LOG_LEVEL.INFO.toString())) {
+            } else if (logLevel.equals(LOG_LEVEL.INFO)) {
                 Log.i(LOGGER_NAME, logMsg);
-            } else if (logLevel.equals(LOG_LEVEL.ERROR.toString())) {
+            } else if (logLevel.equals(LOG_LEVEL.ERROR)) {
                 Log.e(LOGGER_NAME, logMsg);
             }
         }
