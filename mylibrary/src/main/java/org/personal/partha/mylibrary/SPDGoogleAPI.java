@@ -6,6 +6,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.Scope;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.FileContent;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,8 +25,16 @@ import java.util.Map;
 
 public class SPDGoogleAPI {
 
+    public static final int REQUEST_CODE_SIGN_IN;
+    public static final String APPLICATION_NAME;
+
+    static {
+        REQUEST_CODE_SIGN_IN = 125;
+        APPLICATION_NAME = "SPD Library";
+    }
+
     public static void requestGoogleSignIn(Activity mContext) {
-        Log.i(MONGO_DB_NAME, "Requesting sign-in");
+        SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Requesting sign-in");
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
@@ -29,14 +49,11 @@ public class SPDGoogleAPI {
         SharedPreferences prefs = mContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
         GoogleSignIn.getSignedInAccountFromIntent(result)
                 .addOnSuccessListener(googleAccount -> {
-                    Log.i(MyUtility.MONGO_DB_NAME, "Signed in as " + googleAccount.getEmail());
-                    GoogleAccountCredential credential =
-                            GoogleAccountCredential.usingOAuth2(
-                                    mContext, Collections.singleton(DriveScopes.DRIVE_FILE));
+                    SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Signed in as " + googleAccount.getEmail());
+                    GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, Collections.singleton(DriveScopes.DRIVE_FILE));
                     credential.setSelectedAccount(googleAccount.getAccount());
-                    Drive googleDriveService =
-                            new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential)
-                                    .setApplicationName("My Accounts Tracker").build();
+                    Drive googleDriveService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential)
+                                    .setApplicationName(APPLICATION_NAME).build();
                     prefs.edit().putBoolean("googleSignedIn", true).commit();
                     // The SPDDriveServiceHelper encapsulates all REST API and SAF functionality.
                     // Its instantiation is required before handling any onClick actions.
@@ -45,7 +62,7 @@ public class SPDGoogleAPI {
                         iGoogleDrive.getDriveServiceHelperOnLogin(mDriveServiceHelper);
                     }
                 })
-                .addOnFailureListener(exception -> Log.e(MyUtility.MONGO_DB_NAME, "Unable to sign in.", exception));
+                .addOnFailureListener(exception -> SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Unable to sign in.. " + exception.getMessage()));
     }
 
     public static Drive getGoogleDriveService(Context mContext) {
@@ -54,7 +71,7 @@ public class SPDGoogleAPI {
             GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, Collections.singleton(DriveScopes.DRIVE_FILE));
             credential.setSelectedAccount(loggedInGoogleAccount.getAccount());
             return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential)
-                    .setApplicationName("My Accounts Tracker").build();
+                    .setApplicationName(APPLICATION_NAME).build();
         } else {
             return null;
         }
@@ -65,14 +82,14 @@ public class SPDGoogleAPI {
         if (googleDriveService != null) {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             if (mDriveServiceHelper != null) {
-                Log.i(MONGO_DB_NAME, "Reading file " + fileId);
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Reading file " + fileId);
                 String filePath = mContext.getExternalFilesDir(null).getAbsolutePath();
                 mDriveServiceHelper.readFile(fileId, filePath)
                         .addOnSuccessListener(nameAndContent -> {
-                            Log.i(MONGO_DB_NAME, "File Downloaded... ");
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "File Downloaded... ");
                             iGoogleDrive.getDownloadedFilePath(filePath);
                         })
-                        .addOnFailureListener(exception -> Log.e(MONGO_DB_NAME, "Couldn't read file.", exception));
+                        .addOnFailureListener(exception -> SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Couldn't read file.. " + exception.getMessage()));
             }
         }
     }
@@ -82,7 +99,7 @@ public class SPDGoogleAPI {
         if (googleDriveService != null) {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             if (mDriveServiceHelper != null) {
-                Log.i(MONGO_DB_NAME, "Creating a file.");
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Creating a file.");
                 mDriveServiceHelper.createFile(mimeType, fileName, folderId)
                         .addOnSuccessListener(fileId -> {
                             if (iGoogleDrive != null) {
@@ -91,7 +108,7 @@ public class SPDGoogleAPI {
                             saveGoogleDriveFile(fileName, mimeType, fileId, fileToUpload, mContext, iGoogleDrive);
                         })
                         .addOnFailureListener(exception -> {
-                            Log.e(MONGO_DB_NAME, "Couldn't create file.", exception);
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Couldn't create file.. " + exception.getMessage());
                             if (iGoogleDrive != null) {
                                 iGoogleDrive.onFileCreateFailure();
                             }
@@ -105,19 +122,19 @@ public class SPDGoogleAPI {
         if (googleDriveService != null) {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             if (mDriveServiceHelper != null && createdFileId != null) {
-                Log.i(MONGO_DB_NAME, "Saving " + createdFileId);
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Saving " + createdFileId);
                 com.google.api.services.drive.model.File uploadedFile = new com.google.api.services.drive.model.File();
                 uploadedFile.setName(fileName).setMimeType(mimeType);
                 FileContent mediaContent = new FileContent(mimeType, fileToUpload);
                 mDriveServiceHelper.saveFile(createdFileId, uploadedFile, mediaContent)
                         .addOnSuccessListener(fileId -> {
-                            Log.i(MONGO_DB_NAME, "File uploaded successfully");
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "File uploaded successfully");
                             if (iGoogleDrive != null) {
                                 iGoogleDrive.onFileUploadSuccess();
                             }
                         })
                         .addOnFailureListener(exception -> {
-                            Log.e(MONGO_DB_NAME, "Unable to save file via REST.", exception);
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Unable to save file via REST.. " + exception.getMessage());
                             if (iGoogleDrive != null) {
                                 iGoogleDrive.onFileUploadFailure();
                             }
@@ -131,16 +148,16 @@ public class SPDGoogleAPI {
         if (googleDriveService != null) {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             if (mDriveServiceHelper != null) {
-                Log.i(MONGO_DB_NAME, "Deleting file - " + fileId);
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Deleting file - " + fileId);
                 mDriveServiceHelper.deleteFile(fileId)
                         .addOnSuccessListener(success -> {
-                            Log.i(MONGO_DB_NAME, "Deleted the file successfully - " + fileId);
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.INFO, "Deleted the file successfully - " + fileId);
                             if (iGoogleDrive != null) {
                                 iGoogleDrive.onFileDeleteSuccess();
                             }
                         })
                         .addOnFailureListener(exception -> {
-                            Log.e(MyUtility.MONGO_DB_NAME, "Couldn't create file.", exception);
+                            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Couldn't create file.. " + exception.getMessage());
                             if (iGoogleDrive != null) {
                                 iGoogleDrive.onFileDeleteFailure();
                             }
@@ -167,7 +184,7 @@ public class SPDGoogleAPI {
                     iGoogleDrive.onFolderNotFound();
                 }
             }).addOnFailureListener(exception -> {
-                Log.e(MyUtility.MONGO_DB_NAME, "Unable to query files.", exception);
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Unable to query files.. " + exception.getMessage());
                 iGoogleDrive.onFolderNotFound();
             });
         }
@@ -186,7 +203,7 @@ public class SPDGoogleAPI {
                     }
                 }
                 iGoogleDrive.getGoogleDriveFiles(files);
-            }).addOnFailureListener(exception -> Log.e(MyUtility.MONGO_DB_NAME, "Unable to query files.", exception));
+            }).addOnFailureListener(exception -> SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Unable to query files.. " + exception.getMessage()));
         }
     }
 

@@ -65,6 +65,13 @@ public class SPDUtilities {
         DATE_FORMATS = Collections.unmodifiableMap(map);
     }
 
+    /**
+     * Writes Logging Message to the Logcat with supplied TAG information in the variable
+     * <b>LOGGER_NAME</b>. If not initialized, system will use <u>SHAPARTHA_UTILITIES</u> as default TAG.
+     *
+     * @param logLevel Logging Level to be used (WARN, DEBUG, INFO, ERROR)
+     * @param logMsg Logging Message to be printed to the system Logcat
+     */
     public static void writeLog(LOG_LEVEL logLevel, String logMsg) {
         if (!JAVA_LOG_ENABLED) {
             JAVA_LOG_ENABLED = true;
@@ -75,9 +82,11 @@ public class SPDUtilities {
     /**
      * Writes Logging Message to the Logcat with supplied TAG information in the variable
      * <b>LOGGER_NAME</b>. If not initialized, system will use <u>SHAPARTHA_UTILITIES</u> as default TAG.
+     * This method will not work if {@code logEnabled} value is <b>false</b>
      *
      * @param logLevel Logging Level to be used (WARN, DEBUG, INFO, ERROR)
      * @param logMsg Logging Message to be printed to the system Logcat
+     * @param logEnabled Whether the logging should be done or not
      */
     public static void writeLog(LOG_LEVEL logLevel, String logMsg, boolean logEnabled) {
         if (LOGGER_NAME == null || LOGGER_NAME.trim().equalsIgnoreCase("")) {

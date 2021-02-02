@@ -1,6 +1,5 @@
 package org.personal.partha.mylibrary;
 
-import android.util.Log;
 import android.util.Pair;
 
 import com.google.android.gms.tasks.Task;
@@ -21,9 +20,16 @@ import java.util.concurrent.Executors;
 public class SPDDriveServiceHelper {
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private final Drive mDriveService;
+    public static String GOOGLE_DRIVE_FOLDER_NAME = "";
 
     public SPDDriveServiceHelper(Drive driveService) {
         mDriveService = driveService;
+        GOOGLE_DRIVE_FOLDER_NAME = "org.personal.partha.common";
+    }
+
+    public SPDDriveServiceHelper(Drive driveService, String folderName) {
+        mDriveService = driveService;
+        GOOGLE_DRIVE_FOLDER_NAME = folderName;
     }
 
     /**
@@ -36,7 +42,7 @@ public class SPDDriveServiceHelper {
                 File metaDataFolder = new File()
                         .setParents(Collections.singletonList("root"))
                         .setMimeType("application/vnd.google-apps.folder")
-                        .setName("org.personal.partha.myaccountstracker");
+                        .setName(GOOGLE_DRIVE_FOLDER_NAME);
                 File googleFileFolder = mDriveService.files().create(metaDataFolder).setFields("id").execute();
                 if (googleFileFolder == null) {
                     return null;
@@ -50,6 +56,7 @@ public class SPDDriveServiceHelper {
 
             File googleFile = mDriveService.files().create(metaData).execute();
             if (googleFile == null) {
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, "Null result when requesting file creation.");
                 throw new IOException("Null result when requesting file creation.");
             }
             return googleFile.getId();
@@ -70,7 +77,7 @@ public class SPDDriveServiceHelper {
                 mDriveService.files().get(fileId).executeMediaAndDownloadTo(fileStream);
                 return null;
             } catch (FileNotFoundException e) {
-                Log.e(MyUtility.MONGO_DB_NAME, e.getMessage());
+                SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.ERROR, ">>" + e.getMessage());
                 return null;
             } finally {
                 fileStream.flush();
@@ -84,7 +91,6 @@ public class SPDDriveServiceHelper {
      */
     public Task<Void> saveFile(String fileId, File uploadedFile, FileContent mediaContent) {
         return Tasks.call(mExecutor, () -> {
-            // Update the file contents.
             mDriveService.files().update(fileId, uploadedFile, mediaContent).execute();
             return null;
         });
@@ -95,7 +101,6 @@ public class SPDDriveServiceHelper {
      */
     public Task<Void> deleteFile(String fileId) {
         return Tasks.call(mExecutor, () -> {
-            // Update the file contents.
             mDriveService.files().delete(fileId).execute();
             return null;
         });
