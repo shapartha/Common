@@ -210,8 +210,25 @@ public class SPDUtilities {
         return alertBuilder.create();
     }
 
+    /**
+     * Common <code>PROGRESS_DIALOG</code> to display wherever required to show transaction in progress dialog
+     *
+     * @param ctx Application context object to access the application
+     * @return <code><b>ProgressDialog</b></code> object
+     */
     public static ProgressDialog getProgressDialog(Context ctx) {
         return getProgressDialog(ctx, "Processing", "Please wait while transaction is processed...", false);
+    }
+
+    /**
+     * Common <code>PROGRESS_DIALOG</code> to display wherever required to show transaction in progress dialog
+     *
+     * @param ctx Application context object to access the application
+     * @param message Message string to be displayed on progress dialog message box
+     * @return <code><b>ProgressDialog</b></code> object with the customized properties set as per the supplied arguments
+     */
+    public static ProgressDialog getProgressDialog(Context ctx, String message) {
+        return getProgressDialog(ctx, "Processing", message, false);
     }
 
     /**
