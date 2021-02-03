@@ -392,7 +392,7 @@ public class SPDUtilities {
      * @param downloadedFileName File name string for the downloaded file in application internal data directory
      * @return <code>newFileLocation</code> Location of the downloaded file
      */
-    public String downloadFileFromURL(Context mContext, String urlLinkToDownloadFrom, String downloadedFileName) {
+    public static String downloadFileFromURL(Context mContext, String urlLinkToDownloadFrom, String downloadedFileName) {
         int count;
         try {
             URL url = new URL(urlLinkToDownloadFrom);
@@ -426,7 +426,7 @@ public class SPDUtilities {
      * @param urlLink URL string of the resource to read data from
      * @return Contents of the file / URL resource
      */
-    public String readFileFromURL(Context mContext, String urlLink) {
+    public static String readFileFromURL(Context mContext, String urlLink) {
         return readFileFromURL(mContext, urlLink, null);
     }
 
@@ -439,7 +439,7 @@ public class SPDUtilities {
      * @param fileName <code>Optional</code>
      * @return Contents of the file / URL resource
      */
-    public String readFileFromURL(Context mContext, String urlLink, String fileName) {
+    public static String readFileFromURL(Context mContext, String urlLink, String fileName) {
         if (fileName == null || fileName.trim().equalsIgnoreCase("")) {
             fileName = "Dummy.spd";
         }
