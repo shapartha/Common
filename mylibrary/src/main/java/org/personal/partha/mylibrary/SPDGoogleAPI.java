@@ -25,11 +25,10 @@ import java.util.Map;
 
 public class SPDGoogleAPI {
 
-    public static final int REQUEST_CODE_SIGN_IN;
-    public static final String APPLICATION_NAME;
+    public static int REQUEST_CODE_SIGN_IN = 101;
+    public static String APPLICATION_NAME;
 
     static {
-        REQUEST_CODE_SIGN_IN = 125;
         APPLICATION_NAME = "SPD Library";
     }
 
