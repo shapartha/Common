@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
@@ -46,6 +47,7 @@ public class SPDUtilities {
     public static final int OPEN_APK_UPDATE_PACKAGE_CODE = 125;
     public static boolean JAVA_LOG_ENABLED;
     public static String LOGGER_NAME;
+    private static Handler appHandler;
     public static ProgressDialog PROGRESS_DIALOG;
     public enum LOG_LEVEL {
         WARN, DEBUG, INFO, ERROR
@@ -63,6 +65,7 @@ public class SPDUtilities {
         map.put(DATE_FORMAT.MYSQL_DATE_ONLY, "yyyy-MM-dd");
         map.put(DATE_FORMAT.ONLY_TIME, "HH:mm:ss");
         DATE_FORMATS = Collections.unmodifiableMap(map);
+        appHandler = new Handler();
     }
 
     /**
@@ -705,5 +708,25 @@ public class SPDUtilities {
     public static boolean isColorDark(int color) {
         double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
         return !(darkness < 0.5);
+    }
+
+    /**
+     * Handler method to handle any piece of code after default <b>0.5 seconds</b> delay in execution.
+     * For defining custom delay, use {@code attachHandler({@link Runnable} runnable, {@link Long} delayMilliseconds)}
+     *
+     * @param runnable Runnable object to execute after the 0.5 seconds delay
+     */
+    public static void attachHandler(Runnable runnable) {
+        attachHandler(runnable, 500);
+    }
+
+    /**
+     * Handler method to handle any piece of code after a defined delay in execution
+     *
+     * @param runnable Runnable object to execute after the set delay
+     * @param delayMilliseconds Delay time in milliseconds
+     */
+    public static void attachHandler(Runnable runnable, long delayMilliseconds) {
+        appHandler.postDelayed(runnable, delayMilliseconds);
     }
 }
