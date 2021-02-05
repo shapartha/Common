@@ -312,11 +312,23 @@ public class SPDUtilities {
      * and returns a string representation of the formatted date
      *
      * @param dateObj Date object to be formatted
+     * @param format {@link DATE_FORMAT} format in which <code>dateObj</code> will be formatted to
+     * @return A string representation of the formatted date
+     */
+    public static String formatDateToString(Date dateObj, DATE_FORMAT format) {
+        return formatDateToString(dateObj, DATE_FORMATS.get(format));
+    }
+
+    /**
+     * Formats a Date object in the <code>dateObj</code> argument in the given <code>format</code> argument
+     * and returns a string representation of the formatted date
+     *
+     * @param dateObj Date object to be formatted
      * @param format String format in which <code>dateObj</code> will be formatted to
      * @return A string representation of the formatted date
      */
     public static String formatDateToString(Date dateObj, String format) {
-        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMATS.get(format));
         return formatter.format(dateObj);
     }
 
@@ -328,7 +340,7 @@ public class SPDUtilities {
      * @return A string representation of the formatted date
      */
     public static String formatDateToString(Date dateObj) {
-        return formatDateToString(dateObj, "dd-MM-yyyy HH:mm:ss");
+        return formatDateToString(dateObj, DATE_FORMAT.DEFAULT);
     }
 
     /**
@@ -353,6 +365,20 @@ public class SPDUtilities {
      * @throws ParseException Throws <code>{@link ParseException}</code> if the supplied string cannot be converted to a Date object
      */
     public static Date formatStringToDate(String dateObject, DATE_FORMAT dateFormat) throws ParseException {
+        return formatStringToDate(dateObject, DATE_FORMATS.get(dateFormat), false);
+    }
+
+    /**
+     * Returns a Date object by converting a string representation of the ISO Date passed in <b>dateObject</b> argument
+     * in the String format passed as argument in <b>dateFormat</b>
+     *
+     * @param dateObject String representation of the ISO Date
+     * @param dateFormat String format in which the Date should be interpreted
+     * @param isCustomFormat Boolean object to denote custom date format other than specified in {@link DATE_FORMAT}
+     * @return Date object corresponding to the <code>dateObject</code> string
+     * @throws ParseException Throws <code>{@link ParseException}</code> if the supplied string cannot be converted to a Date object
+     */
+    public static Date formatStringToDate(String dateObject, String dateFormat, Boolean isCustomFormat) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMATS.get(dateFormat));
         return formatter.parse(dateObject);
     }
@@ -368,7 +394,21 @@ public class SPDUtilities {
      * @throws ParseException Throws <code>{@link ParseException}</code> if the supplied string cannot be converted to a Date object
      */
     public static Date formatStringToDate(String dateObject, DATE_FORMAT dateFormat, String timeZoneString) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMATS.get(dateFormat));
+        return formatStringToDate(dateObject, DATE_FORMATS.get(dateFormat), timeZoneString);
+    }
+
+    /**
+     * Returns a Date object by converting a string representation of the ISO Date passed in <b>dateObject</b> argument
+     * with the given <code>timeZoneString</code> timezone in the String format passed as argument in <b>dateFormat</b>
+     *
+     * @param dateObject String representation of the ISO Date
+     * @param dateFormat String format in which the Date should be interpreted
+     * @param timeZoneString String representation of the ISO Timezone format
+     * @return Date object corresponding to the <code>dateObject</code> string
+     * @throws ParseException Throws <code>{@link ParseException}</code> if the supplied string cannot be converted to a Date object
+     */
+    public static Date formatStringToDate(String dateObject, String dateFormat, String timeZoneString) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         TimeZone timeZone = TimeZone.getTimeZone(timeZoneString);
         formatter.setTimeZone(timeZone);
         return formatter.parse(dateObject);
