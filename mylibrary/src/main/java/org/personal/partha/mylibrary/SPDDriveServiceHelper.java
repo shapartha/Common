@@ -1,7 +1,11 @@
 package org.personal.partha.mylibrary;
 
+import android.content.Context;
 import android.util.Pair;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.api.client.http.FileContent;
@@ -21,6 +25,7 @@ public class SPDDriveServiceHelper {
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private final Drive mDriveService;
     public static String GOOGLE_DRIVE_FOLDER_NAME = "";
+    private GoogleSignInClient mGoogleSignInClient;
 
     public SPDDriveServiceHelper(Drive driveService) {
         mDriveService = driveService;
@@ -30,6 +35,14 @@ public class SPDDriveServiceHelper {
     public SPDDriveServiceHelper(Drive driveService, String folderName) {
         mDriveService = driveService;
         GOOGLE_DRIVE_FOLDER_NAME = folderName;
+    }
+
+    public GoogleSignInOptions getGoogleSignInOptions() {
+        return new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+    }
+
+    public GoogleSignInClient getGoogleSignInClient(Context mContext, GoogleSignInOptions gso) {
+        return GoogleSignIn.getClient(mContext, gso);
     }
 
     /**
