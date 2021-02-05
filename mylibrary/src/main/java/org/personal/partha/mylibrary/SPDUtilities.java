@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
@@ -728,5 +729,36 @@ public class SPDUtilities {
      */
     public static void attachHandler(Runnable runnable, long delayMilliseconds) {
         appHandler.postDelayed(runnable, delayMilliseconds);
+    }
+
+    /**
+     * Exports your application local database and provides you with a Share option to share outside the application.
+     *
+     * You must specify a <code>provider</code> tag in your app manifest file with <code>android:authorities="${applicationId}.provider"</code>
+     * as an attribute. Learn more about {@link FileProvider} here
+     *
+     * @param context Application context object to access the application
+     * @param dbName Name of the db file object to export
+     * @return {@code 1} if export is successful else {@code 0}
+     */
+    public static int exportAppDbFile(Context context, String dbName) {
+        int responseCode = 0;
+        File dbFile = context.getDatabasePath(dbName);
+        String myFilePath = dbFile.getAbsolutePath();
+        writeLog(LOG_LEVEL.INFO, myFilePath);
+        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+        File fileWithinMyDir = new File(myFilePath);
+        if (fileWithinMyDir.exists()) {
+            intentShareFile.setType("application/vnd.sqlite3");
+            Uri fileUri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", new File(myFilePath));
+            intentShareFile.putExtra(Intent.EXTRA_STREAM, fileUri);
+            intentShareFile.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "Exporting App DB - " + dbName);
+            intentShareFile.putExtra(Intent.EXTRA_TEXT, "Exporting Application DB - " + dbName);
+            context.startActivity(Intent.createChooser(intentShareFile, "Save Exported DB"));
+            Toast.makeText(context, "Upload this backup file to your File System/Google Drive for restoring at a later time.", Toast.LENGTH_LONG).show();
+            responseCode = 1;
+        }
+        return responseCode;
     }
 }
