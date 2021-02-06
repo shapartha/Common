@@ -42,14 +42,6 @@ public class SPDDriveServiceHelper {
         GOOGLE_DRIVE_FOLDER_NAME = folderName;
     }
 
-    public GoogleSignInOptions getGoogleSignInOptions() {
-        return new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-    }
-
-    public GoogleSignInClient getGoogleSignInClient(Context mContext, GoogleSignInOptions gso) {
-        return GoogleSignIn.getClient(mContext, gso);
-    }
-
     /**
      * Creates a text file in the user's My Drive folder and returns its file ID.
      */
