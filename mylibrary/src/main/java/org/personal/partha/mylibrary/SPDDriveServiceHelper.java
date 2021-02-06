@@ -13,10 +13,15 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import org.personal.partha.mylibrary.models.SPDGoogleDriveFile;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -127,11 +132,17 @@ public class SPDDriveServiceHelper {
      * request Drive Full Scope in the <a href="https://play.google.com/apps/publish">Google
      * Developer's Console</a> and be submitted to Google for verification.</p>
      */
-    public Task<FileList> queryFiles() {
-        return Tasks.call(mExecutor, new Callable<FileList>() {
+    public Task<List<SPDGoogleDriveFile>> queryFiles() {
+        return Tasks.call(mExecutor, new Callable<List<SPDGoogleDriveFile>>() {
             @Override
-            public FileList call() throws Exception {
-                return mDriveService.files().list().setSpaces("drive").execute();
+            public List<SPDGoogleDriveFile> call() throws Exception {
+                FileList fileList = mDriveService.files().list().setSpaces("drive").execute();
+                List<SPDGoogleDriveFile> returnFiles = new ArrayList<>();
+                for (File driveFile : fileList.getFiles()) {
+                    SPDGoogleDriveFile spdGoogleDriveFile = new SPDGoogleDriveFile(driveFile);
+                    returnFiles.add(spdGoogleDriveFile);
+                }
+                return returnFiles;
             }
         });
     }
