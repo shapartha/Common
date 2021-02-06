@@ -189,7 +189,11 @@ public class SPDUtilities {
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(mContext);
         title = (title == null) ? "Title" : title;
         if (viewResId != null && viewResId != 0) {
-            alertBuilder.setTitle(title).setView(viewResId);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                alertBuilder.setTitle(title).setView(viewResId);
+            } else {
+                alertBuilder.setTitle(title).setMessage("View ID not supported on Android Versions below " + Build.VERSION_CODES.LOLLIPOP);
+            }
         } else {
             message = (message == null) ? "This is Dummy Message" : message;
             alertBuilder.setTitle(title).setMessage(message);

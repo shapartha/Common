@@ -18,6 +18,8 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 
+import org.personal.partha.mylibrary.models.SPDGoogleDriveFile;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -171,10 +173,10 @@ public class SPDGoogleAPI {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             mDriveServiceHelper.queryFiles().addOnSuccessListener(fileList -> {
                 boolean folderFound = false;
-                for (com.google.api.services.drive.model.File file : fileList.getFiles()) {
-                    String fileName = file.getName();
-                    if (file.getMimeType().equalsIgnoreCase("application/vnd.google-apps.folder")) {
-                        iGoogleDrive.setFolderId(file.getId());
+                for (SPDGoogleDriveFile file : fileList) {
+                    String fileName = file.getMyFile().getName();
+                    if (file.getMyFile().getMimeType().equalsIgnoreCase("application/vnd.google-apps.folder")) {
+                        iGoogleDrive.setFolderId(file.getMyFile().getId());
                         folderFound = true;
                         break;
                     }
@@ -195,10 +197,10 @@ public class SPDGoogleAPI {
             SPDDriveServiceHelper mDriveServiceHelper = new SPDDriveServiceHelper(googleDriveService);
             Map<String, String> files = new LinkedHashMap<>();
             mDriveServiceHelper.queryFiles().addOnSuccessListener(fileList -> {
-                for (com.google.api.services.drive.model.File file : fileList.getFiles()) {
-                    String fileName = file.getName();
-                    if (!file.getMimeType().equalsIgnoreCase("application/vnd.google-apps.folder")) {
-                        files.put(file.getId(), fileName);
+                for (SPDGoogleDriveFile file : fileList) {
+                    String fileName = file.getMyFile().getName();
+                    if (!file.getMyFile().getMimeType().equalsIgnoreCase("application/vnd.google-apps.folder")) {
+                        files.put(file.getMyFile().getId(), fileName);
                     }
                 }
                 iGoogleDrive.getGoogleDriveFiles(files);
