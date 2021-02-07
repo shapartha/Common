@@ -332,7 +332,7 @@ public class SPDUtilities {
      * @return A string representation of the formatted date
      */
     public static String formatDateToString(Date dateObj, String format) {
-        SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMATS.get(format));
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
         return formatter.format(dateObj);
     }
 
