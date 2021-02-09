@@ -383,7 +383,7 @@ public class SPDUtilities {
      * @throws ParseException Throws <code>{@link ParseException}</code> if the supplied string cannot be converted to a Date object
      */
     public static Date formatStringToDate(String dateObject, String dateFormat, Boolean isCustomFormat) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMATS.get(dateFormat));
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
         return formatter.parse(dateObject);
     }
 
