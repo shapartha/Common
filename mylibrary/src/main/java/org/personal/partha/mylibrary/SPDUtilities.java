@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -17,19 +18,25 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
+
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.SecureRandom;
@@ -55,6 +62,9 @@ public class SPDUtilities {
     }
     public enum DATE_FORMAT {
         DEFAULT, MYSQL_DATETIME, ONLY_DATE, MYSQL_DATE_ONLY, ONLY_TIME
+    }
+    public enum REST_STATUS {
+        IDLE, IN_PROGRESS, COMPLETED, FAILED
     }
     public static final Map<DATE_FORMAT, String> DATE_FORMATS;
 
@@ -113,9 +123,12 @@ public class SPDUtilities {
      * Navigates to the Intent/Activity supplied in the <b>clazz</b> argument from the
      * current activity's context object - <b>ctx</b>
      *
+     * ( Works on Android versions Jelly Bean & above )
+     *
      * @param ctx Current Activity Context object
      * @param clazz Next Activity/Intent Class object
      */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public static void goToIntent(Context ctx, Class<?> clazz) {
         Intent intent = new Intent(ctx, clazz);
         ctx.startActivity(intent);
@@ -804,5 +817,45 @@ public class SPDUtilities {
             responseCode = 1;
         }
         return responseCode;
+    }
+
+    /**
+     *
+     * @param REST_API_URL URL of the REST API to invoke to get API token
+     * @param REST_API_PARAMS URL Query Params string containing the request parameters
+     * @param restApiCallback Callback interface in which {@code onSuccess()} method will be invoked after receiving the response from REST API URL
+     * @return {@link REST_STATUS enum values stating status of the transaction}
+     */
+    public static REST_STATUS initRESTAPI(String REST_API_URL, String REST_API_PARAMS, RestApiCallback restApiCallback) {
+        try {
+            URL url = new URL(REST_API_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Content", "application/x-www-form-urlencoded");
+            conn.setDoOutput(true);
+            conn.connect();
+            try(OutputStream os = conn.getOutputStream()) {
+                byte[] input = REST_API_PARAMS.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                JSONObject jsonObject = new JSONObject(response.toString());
+                restApiCallback.onSuccess(jsonObject);
+            }
+            return REST_STATUS.IN_PROGRESS;
+        } catch (Exception e) {
+            writeLog(SPDUtilities.LOG_LEVEL.ERROR, e.getMessage());
+            return REST_STATUS.FAILED;
+        }
+    }
+
+    public interface RestApiCallback {
+        void onSuccess(Object o);
     }
 }
