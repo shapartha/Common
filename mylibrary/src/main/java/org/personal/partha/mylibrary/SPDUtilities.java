@@ -820,13 +820,15 @@ public class SPDUtilities {
     }
 
     /**
+     * Invokes a REST API by the URL given in <code>REST_API_URL</code>, passing query parameters to it as given in <code>REST_API_PARAMS</code>
+     * and returning response in a callback interface
      *
      * @param REST_API_URL URL of the REST API to invoke to get API token
      * @param REST_API_PARAMS URL Query Params string containing the request parameters
      * @param restApiCallback Callback interface in which {@code onSuccess()} method will be invoked after receiving the response from REST API URL
      * @return {@link REST_STATUS enum values stating status of the transaction}
      */
-    public static REST_STATUS initRESTAPI(String REST_API_URL, String REST_API_PARAMS, RestApiCallback restApiCallback) {
+    public static Object invokeRESTAPI(String REST_API_URL, String REST_API_PARAMS, RestApiCallback restApiCallback) {
         try {
             URL url = new URL(REST_API_URL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -846,13 +848,29 @@ public class SPDUtilities {
                     response.append(responseLine.trim());
                 }
                 JSONObject jsonObject = new JSONObject(response.toString());
-                restApiCallback.onSuccess(jsonObject);
+                if (restApiCallback != null) {
+                    restApiCallback.onSuccess(jsonObject);
+                } else {
+                    return jsonObject;
+                }
             }
             return REST_STATUS.IN_PROGRESS;
         } catch (Exception e) {
             writeLog(SPDUtilities.LOG_LEVEL.ERROR, e.getMessage());
             return REST_STATUS.FAILED;
         }
+    }
+
+    /**
+     * Invokes a REST API by the URL given in <code>REST_API_URL</code>, passing query parameters to it as given in <code>REST_API_PARAMS</code>
+     * and returning response as a {@link JSONObject}
+     *
+     * @param REST_API_URL URL of the REST API to invoke to get API token
+     * @param REST_API_PARAMS URL Query Params string containing the request parameters
+     * @return {@link REST_STATUS enum values stating status of the transaction}
+     */
+    public static Object invokeRESTAPI(String REST_API_URL, String REST_API_PARAMS) {
+        return invokeRESTAPI(REST_API_URL, REST_API_PARAMS, null);
     }
 
     public interface RestApiCallback {
