@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -847,7 +848,12 @@ public class SPDUtilities {
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                JSONObject jsonObject = new JSONObject(response.toString());
+                Object jsonObject = null;
+                if (response.toString().endsWith("]")) {
+                    jsonObject = new JSONArray(response.toString());
+                } else {
+                    jsonObject = new JSONObject(response.toString());
+                }
                 if (restApiCallback != null) {
                     restApiCallback.onSuccess(jsonObject);
                 } else {
