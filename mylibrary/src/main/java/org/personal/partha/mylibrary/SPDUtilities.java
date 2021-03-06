@@ -35,11 +35,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -881,5 +884,14 @@ public class SPDUtilities {
 
     public interface RestApiCallback {
         void onSuccess(Object o);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static String encodeString(String inputText) {
+        try {
+            return URLEncoder.encode(inputText, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            return e.getMessage();
+        }
     }
 }
