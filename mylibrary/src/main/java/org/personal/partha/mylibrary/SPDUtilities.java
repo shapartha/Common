@@ -886,6 +886,13 @@ public class SPDUtilities {
         void onSuccess(Object o);
     }
 
+    /**
+     * Encodes a given {@code inputText} string into URL-encoded UTF8 format string so that the data can be sent across
+     * different systems & APIs.
+     *
+     * @param inputText String to be encoded
+     * @return {@link String} URL-encoded string
+     */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static String encodeString(String inputText) {
         try {
