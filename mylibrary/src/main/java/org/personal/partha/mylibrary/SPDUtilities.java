@@ -284,9 +284,11 @@ public class SPDUtilities {
      * Hides the common <code>PROGRESS_DIALOG</code> object if it's currently displaying else nothing happens
      */
     public static void hideProgressDialog() {
-        if (PROGRESS_DIALOG != null) {
-            PROGRESS_DIALOG.dismiss();
-        }
+        try {
+            if (PROGRESS_DIALOG != null) {
+                PROGRESS_DIALOG.dismiss();
+            }
+        } catch(Exception ignored) {}
     }
 
     /**
