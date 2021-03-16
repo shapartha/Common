@@ -22,6 +22,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -902,5 +903,51 @@ public class SPDUtilities {
         } catch (UnsupportedEncodingException e) {
             return e.getMessage();
         }
+    }
+
+    /**
+     * Invoke any FETCH Operation on REST API
+     *
+     * @param urlLink URL of the REST API to fetch data
+     * @param params Any string url-parameters to be appended onto the URL
+     * @return {@link Object} Returns an {@link JSONObject} or {@link JSONArray} depending upon the response
+     */
+    public static Object invokeFetchApi(String urlLink, String params) {
+        String dataUrl = urlLink + params;
+        try {
+            URL url = new URL(dataUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP Error code : " + conn.getResponseCode());
+            }
+            InputStreamReader in = new InputStreamReader(conn.getInputStream());
+            BufferedReader br = new BufferedReader(in);
+            String output;
+            JSONObject jsonObject = null;
+            JSONArray jsonArray = null;
+            while ((output = br.readLine()) != null) {
+                try {
+                    if (output.startsWith("[")) {
+                        jsonArray = new JSONArray(output);
+                    } else {
+                        jsonObject = new JSONObject(output);
+                    }
+                } catch (JSONException err) {
+                    SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.DEBUG, err.toString());
+                }
+            }
+            conn.disconnect();
+            if (jsonArray != null) {
+                return jsonArray;
+            } else {
+                return jsonObject;
+            }
+        } catch (Exception e) {
+            SPDUtilities.writeLog(SPDUtilities.LOG_LEVEL.DEBUG, "Exception in FetchRestApi:- " + e);
+            e.printStackTrace();
+        }
+        return null;
     }
 }
