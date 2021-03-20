@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -61,6 +63,7 @@ public class SPDUtilities {
     public static boolean JAVA_LOG_ENABLED;
     public static String LOGGER_NAME;
     private static Handler appHandler;
+    private static Timer timer = new Timer(true);
     public static ProgressDialog PROGRESS_DIALOG;
     public enum LOG_LEVEL {
         WARN, DEBUG, INFO, ERROR
@@ -793,6 +796,26 @@ public class SPDUtilities {
      */
     public static void attachHandler(Runnable runnable, long delayMilliseconds) {
         appHandler.postDelayed(runnable, delayMilliseconds);
+    }
+
+    /**
+     * TimerTask to handle any piece of code after default <b>0.5 seconds</b> delay in execution.
+     * For defining custom delay, use {@code attachHandler({@link TimerTask} runnable, {@link Long} delayMilliseconds)}
+     *
+     * @param timerTask {@link TimerTask} object to execute after the 0.5 seconds delay
+     */
+    public static void attachHandler(TimerTask timerTask) {
+        attachHandler(timerTask, 500);
+    }
+
+    /**
+     * TimerTask to handle any piece of code after a defined delay in execution
+     *
+     * @param timerTask {@link TimerTask} object to execute after the set delay
+     * @param delayMilliseconds Delay time in milliseconds
+     */
+    public static void attachHandler(TimerTask timerTask, long delayMilliseconds) {
+        timer.schedule(timerTask, delayMilliseconds);
     }
 
     /**
